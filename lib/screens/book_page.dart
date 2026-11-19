@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../models/models_book.dart';
 import '../models/models_genre.dart';
+import '../data/books_data.dart';
 import '../widgets/book_tile.dart';
+import '../widgets/genre_filter.dart';
 import 'book_details_page.dart';
 
 class BookPage extends StatefulWidget {
@@ -13,80 +15,21 @@ class BookPage extends StatefulWidget {
 }
 
 class _BookPageState extends State<BookPage> {
+  final TextEditingController searchController = TextEditingController();
+
   String search = '';
   Genre? selectedGenre;
 
-  List<Book> books = [
-    Book(
-      id: 1,
-      title: 'Anush',
-      author: 'Hovhannes Tumanyan',
-      genre: Genre.poetry,
-    ),
-    Book(id: 2, title: 'Samvel', author: 'Raffi', genre: Genre.novel),
-    Book(id: 3, title: 'Khenty', author: 'Raffi', genre: Genre.novel),
-    Book(
-      id: 4,
-      title: 'Poqrik Ishkhany',
-      author: 'Antuan de Sent-Ekzyuperi',
-      genre: Genre.fantasy,
-    ),
-    Book(
-      id: 5,
-      title: 'Giqory',
-      author: 'Hovhannes Tumanyan',
-      genre: Genre.novel,
-    ),
-    Book(
-      id: 6,
-      title: 'Hayots Patmutyun',
-      author: 'Agatangeghos',
-      genre: Genre.history,
-    ),
-    Book(
-      id: 7,
-      title: 'Verq Hayastani',
-      author: 'Khachatur Abovyan',
-      genre: Genre.novel,
-    ),
-    Book(
-      id: 8,
-      title: 'Tmkaberdy Arumy',
-      author: 'Hovhannes Tumanyan',
-      genre: Genre.poetry,
-    ),
-    Book(
-      id: 9,
-      title: 'Spitak Zhanyqy',
-      author: 'Jack London',
-      genre: Genre.fantasy,
-    ),
-    Book(
-      id: 10,
-      title: 'Anahit',
-      author: 'Ghazaros Aghayan',
-      genre: Genre.fantasy,
-    ),
-  ];
-
-  List<Book> get filteredBooks {
-    return books.where((book) {
-      final query = search.toLowerCase();
-
-      final matchesSearch =
-          book.title.toLowerCase().contains(query) ||
-          book.author.toLowerCase().contains(query);
-
-      final matchesGenre = selectedGenre == null || book.genre == selectedGenre;
-
-      return matchesSearch && matchesGenre;
-    }).toList();
-  }
-
-  // Կարդացված գրքերի քանակ
+  List<Book> books = BooksData.getBooks();
 
   int get readCount {
     return books.where((book) => book.isRead).length;
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   void deleteBook(Book book) {
@@ -105,15 +48,15 @@ class _BookPageState extends State<BookPage> {
           label: 'Վերականգնել',
           onPressed: () {
             setState(() {
-              books.insert(index.clamp(0, books.length), book);
+              final safeIndex = index > books.length ? books.length : index;
+
+              books.insert(safeIndex, book);
             });
           },
         ),
       ),
     );
   }
-
-  // Բացել գրքի մանրամասները
 
   Future<void> openDetails(Book book) async {
     final result = await Navigator.push<int>(
@@ -136,6 +79,18 @@ class _BookPageState extends State<BookPage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredBooks = books.where((book) {
+      final query = search.toLowerCase().trim();
+
+      final matchesSearch =
+          book.title.toLowerCase().contains(query) ||
+          book.author.toLowerCase().contains(query);
+
+      final matchesGenre = selectedGenre == null || book.genre == selectedGenre;
+
+      return matchesSearch && matchesGenre;
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Իմ գրքերը ($readCount / ${books.length})'),
@@ -144,22 +99,28 @@ class _BookPageState extends State<BookPage> {
 
       body: Column(
         children: [
-          // Որոնման դաշտ
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
+              controller: searchController,
+
               onChanged: (value) {
                 setState(() {
                   search = value;
                 });
               },
+
               decoration: InputDecoration(
                 hintText: 'Որոնել գիրք կամ հեղինակ',
+
                 prefixIcon: const Icon(Icons.search),
 
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.close),
+
                   onPressed: () {
+                    searchController.clear();
+
                     setState(() {
                       search = '';
                     });
@@ -172,40 +133,13 @@ class _BookPageState extends State<BookPage> {
           ),
 
           // Ժանրերի ֆիլտր
-          SizedBox(
-            height: 50,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                ChoiceChip(
-                  label: const Text('Բոլորը'),
-                  selected: selectedGenre == null,
-                  onSelected: (value) {
-                    setState(() {
-                      selectedGenre = null;
-                    });
-                  },
-                ),
-
-                const SizedBox(width: 8),
-
-                ...Genre.values.map((genre) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(genre.name),
-                      selected: selectedGenre == genre,
-                      onSelected: (value) {
-                        setState(() {
-                          selectedGenre = genre;
-                        });
-                      },
-                    ),
-                  );
-                }),
-              ],
-            ),
+          GenreFilter(
+            selectedGenre: selectedGenre,
+            onSelected: (genre) {
+              setState(() {
+                selectedGenre = genre;
+              });
+            },
           ),
 
           const SizedBox(height: 10),
@@ -231,6 +165,7 @@ class _BookPageState extends State<BookPage> {
 
                       return Dismissible(
                         key: ValueKey(book.id),
+
                         direction: DismissDirection.horizontal,
 
                         background: Container(

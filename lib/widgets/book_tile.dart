@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/models_genre.dart';
 import '../models/models_book.dart';
+import '../widgets/ star_rating.dart';
 
 class BookTile extends StatelessWidget {
   final Book book;
@@ -38,19 +38,13 @@ class BookTile extends StatelessWidget {
 
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Text(book.author), Text(book.genre.name)],
-      ),
+        children: [
+          Text(book.author),
+          Text(book.genre.name),
 
-      trailing: book.rating > 0
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                book.rating,
-                (index) =>
-                    const Icon(Icons.star, color: Colors.amber, size: 17),
-              ),
-            )
-          : const Icon(Icons.arrow_forward_ios, size: 16),
+          if (book.rating > 0) StarRating(rating: book.rating, size: 17),
+        ],
+      ),
     );
   }
 }

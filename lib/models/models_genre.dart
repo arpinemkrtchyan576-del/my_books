@@ -1,16 +1,16 @@
 enum Genre { novel, history, fantasy, poetry }
 
-extension GenreName on Genre {
-  String get name {
+extension GenreLabel on Genre {
+  String get label {
     switch (this) {
       case Genre.novel:
-        return 'Vep';
+        return 'Վեպ';
       case Genre.history:
-        return 'Patmutyun';
+        return 'Պատմություն';
       case Genre.fantasy:
-        return 'Fantastica';
+        return 'Ֆանտաստիկա';
       case Genre.poetry:
-        return 'Banastexcucyunner';
+        return 'Բանաստեղծություն';
     }
   }
 }

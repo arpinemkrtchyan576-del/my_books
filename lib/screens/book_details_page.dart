@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/models_book.dart';
+import '../widgets/ star_rating.dart';
 
 class BookDetailsPage extends StatefulWidget {
   final Book book;
-
   const BookDetailsPage({super.key, required this.book});
-
   @override
   State<BookDetailsPage> createState() => _BookDetailsPageState();
 }
@@ -37,40 +36,29 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
               style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 10),
-
             Text('Հեղինակ՝ ${widget.book.author}'),
-
-            Text('Ժանր՝ ${widget.book.genre.name}'),
-
+            Text('Ժանր՝ ${widget.book.genre}'),
             const SizedBox(height: 30),
-
             const Text('Գնահատիր գիրքը', style: TextStyle(fontSize: 20)),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                return IconButton(
-                  onPressed: () {
-                    setState(() {
-                      rating = index + 1;
-                    });
-                  },
-                  icon: Icon(
-                    index < rating ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
-                    size: 35,
-                  ),
-                );
-              }),
+            const SizedBox(height: 10),
+            StarRating(
+              rating: rating,
+              size: 35,
+              onChanged: (value) {
+                setState(() {
+                  rating = value;
+                });
+              },
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, rating);
-              },
+              onPressed: rating == 0
+                  ? null
+                  : () {
+                      Navigator.pop(context, rating);
+                    },
               child: const Text('Պահպանել'),
             ),
           ],

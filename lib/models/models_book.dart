@@ -1,10 +1,11 @@
 import 'models_genre.dart';
 
 class Book {
-  int id;
-  String title;
-  String author;
-  Genre genre;
+  final int id;
+  final String title;
+  final String author;
+  final Genre genre;
+
   bool isRead;
   int rating;
 
